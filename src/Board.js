@@ -30,10 +30,18 @@ import './Board.css';
  **/
 
 class Board extends Component {
+  static defaultProps = {
+    nrows: 5,
+    ncols: 5,
+    chanceLightStartsOn: 0.25
+  };
 
   constructor(props) {
     super(props);
-
+    this.state = {
+      hasWon: false,
+      board: this.createBoard()
+    };
     // TODO: set initial state
   }
 
@@ -41,6 +49,13 @@ class Board extends Component {
 
   createBoard() {
     let board = [];
+    for(let y=0; y< this.props.nrows; y++){
+      let row=[];
+      for(let x = 0; x < this.props.ncols;x++){
+       row.push (Math.random () < this.props.chanceLightStartsOn)
+      }
+      board.push(row);
+    }
     // TODO: create array-of-arrays of true/false values
     return board
   }
@@ -60,20 +75,58 @@ class Board extends Component {
         board[y][x] = !board[y][x];
       }
     }
+    
+    //This flips the cells around where you click
+    flipCell(y,x);
+    flipCell(y,x-1)
+    flipCell(y,x+1)
+    flipCell(y-1,x)
+    flipCell(y+1,x)
 
-    // TODO: flip this cell and the cells around it
 
     // win when every cell is turned off
-    // TODO: determine is the game has been won
-
-    this.setState({board, hasWon});
+    let hasWon = board.every(row => row.every(cell => !cell));
+    this.setState({board, hasWon });
   }
 
 
   /** Render game board or winning message. */
 
   render() {
-
+    if(this.state.hasWon){
+      return (
+        <div className='Board-title'>
+          <div className='Winner'>
+            <div className='neon-orange'>You</div>
+            <div className='neon-blue'>Win!</div>
+          </div>
+        </div>
+      )
+    }
+    let tblBoard = [];
+    for(let y = 0; y < this.props.nrows; y++){
+      let row = [];
+      for(let x = 0; x < this.props.ncols; x++){
+        let coord = `${y}-${x}`
+        row.push(
+          <Cell 
+          key={coord} 
+          isLit={this.state.board[y][x]} flipCellsAroundMe = {()=>this.flipCellsAround(coord)}
+          />)
+      }
+      tblBoard.push(<tr>{row}</tr>)
+    }
+    return (
+      <div>
+        <div className='Board-title'>
+        <div className='neon-orange'>Lights</div>
+        <div className='neon-blue'>Out!</div>
+        </div>
+        <table className='Board'>
+        <tbody>{tblBoard}</tbody>
+        </table>   
+      </div>
+    )
     // if the game is won, just show a winning msg & render nothing else
 
     // TODO
